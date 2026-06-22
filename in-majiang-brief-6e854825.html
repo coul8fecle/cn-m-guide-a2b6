@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>麻将胡了 · 牌局中的排列与和牌之道</title>
+  <style>
+    /* 基本重置与深色头图基调 */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      line-height: 1.65;
+      color: #1e1f24;
+      background: #f5f3ef;
+    }
+
+    /* Hero 区 — 深色背景 + 纹理感 */
+    .hero {
+      background: #14161b;
+      background-image: radial-gradient(circle at 20% 30%, #292e36 0%, #0c0e11 100%);
+      color: #e8e5de;
+      padding: 4rem 1.5rem 3.8rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #b8a48b 30%, #b8a48b 70%, transparent);
+    }
+
+    .hero h1 {
+      font-size: 2.6rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.8rem;
+      color: #f0ece4;
+    }
+
+    .hero .sub {
+      font-size: 1.1rem;
+      max-width: 680px;
+      margin: 0 auto 1.2rem;
+      color: #b9b2a6;
+      line-height: 1.7;
+    }
+
+    .hero .tagline {
+      display: inline-block;
+      background: #353b44;
+      color: #d5cfc2;
+      padding: 0.35rem 1.4rem;
+      border-radius: 30px;
+      font-size: 0.85rem;
+      letter-spacing: 0.03em;
+      backdrop-filter: blur(2px);
+    }
+
+    /* 主内容容器 */
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2.8rem 1.5rem 3.5rem;
+    }
+
+    /* 优势区 — 卡片网格 */
+    .advantage-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.8rem;
+      margin: 2rem 0 2.6rem;
+    }
+
+    .advantage-card {
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 1.8rem 1.4rem;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);
+      transition: transform 0.15s ease, box-shadow 0.2s;
+    }
+
+    .advantage-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 22px rgba(0, 0, 0, 0.06);
+    }
+
+    .advantage-card .icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      display: block;
+      color: #766b58;
+    }
+
+    .advantage-card h3 {
+      font-size: 1.2rem;
+      font-weight: 500;
+      margin-bottom: 0.4rem;
+      color: #2d2b27;
+    }
+
+    .advantage-card p {
+      font-size: 0.95rem;
+      color: #4d4a44;
+    }
+
+    /* 说明区 — 段落 + 特色引用 */
+    .exposition {
+      background: #ffffffdd;
+      backdrop-filter: blur(2px);
+      padding: 2.2rem 1.8rem;
+      border-radius: 22px;
+      margin: 2.5rem 0 2.2rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+      border: 1px solid #e7e2d9;
+    }
+
+    .exposition p {
+      margin-bottom: 1.1rem;
+    }
+
+    .exposition p:last-child {
+      margin-bottom: 0;
+    }
+
+    .highlight-quote {
+      border-left: 4px solid #b8a48b;
+      padding: 0.6rem 1rem 0.6rem 1.4rem;
+      background: #f8f5ef;
+      margin: 1.5rem 0 1.2rem;
+      border-radius: 0 12px 12px 0;
+      font-style: normal;
+      color: #3b3730;
+    }
+
+    .highlight-quote strong {
+      color: #5b4e3a;
+    }
+
+    /* FAQ 摘要 — 紧凑风格 */
+    .faq-summary {
+      margin: 2.8rem 0 1.8rem;
+    }
+
+    .faq-summary h2 {
+      font-size: 1.5rem;
+      font-weight: 450;
+      color: #2b2821;
+      letter-spacing: 0.02em;
+      margin-bottom: 1.2rem;
+    }
+
+    .faq-item {
+      border-bottom: 1px solid #dcd6cc;
+      padding: 1rem 0;
+    }
+
+    .faq-item:last-child {
+      border-bottom: none;
+    }
+
+    .faq-question {
+      font-weight: 500;
+      color: #2f2b24;
+      display: block;
+      margin-bottom: 0.2rem;
+      font-size: 1rem;
+    }
+
+    .faq-answer {
+      font-size: 0.94rem;
+      color: #5c5850;
+      margin-top: 0.2rem;
+    }
+
+    .faq-answer a {
+      color: #866d51;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-decoration-thickness: 1px;
+      font-weight: 450;
+    }
+
+    .faq-answer a:hover {
+      color: #b08a68;
+    }
+
+    /* 底部链接区 */
+    .bottom-links {
+      margin-top: 3.2rem;
+      padding-top: 1.8rem;
+      border-top: 1px solid #dad4c9;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.2rem 1.8rem;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .bottom-links a {
+      color: #5f5542;
+      text-decoration: none;
+      font-size: 0.9rem;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .bottom-links a:hover {
+      color: #8f775b;
+      border-bottom: 1px solid #b8a48b;
+    }
+
+    .bottom-links .primary-link {
+      font-weight: 500;
+      color: #6d5b41;
+      font-size: 0.95rem;
+    }
+
+    /* 强调色链接 (全局) */
+    a {
+      color: #7a664b;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    a:hover {
+      color: #a88764;
+    }
+
+    /* 响应式细节 */
+    @media (max-width: 640px) {
+      .hero h1 {
+        font-size: 2rem;
+      }
+
+      .hero .sub {
+        font-size: 1rem;
+      }
+
+      .container {
+        padding: 1.8rem 1rem 2.5rem;
+      }
+
+      .exposition {
+        padding: 1.5rem 1rem;
+      }
+
+      .advantage-grid {
+        gap: 1rem;
+      }
+
+      .bottom-links {
+        flex-direction: column;
+        gap: 0.8rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .hero {
+        padding: 2.8rem 1rem 2.8rem;
+      }
+
+      .advantage-card {
+        padding: 1.4rem 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Hero 区：深色头图，聚焦“和牌”的知识感 -->
+  <header class="hero">
+    <h1>排列 · 概率 · 和牌</h1>
+    <p class="sub">
+      麻将不只是一种娱乐，更是手牌排列与取舍的学问。从十三张到听牌，每一局都暗含组合逻辑。
+    </p>
+    <span class="tagline">从牌型到胡牌 · 麻将胡了的基础</span>
+  </header>
+
+  <main class="container">
+
+    <!-- 优势区：三个知识性卡片 -->
+    <section class="advantage-grid">
+      <div class="advantage-card">
+        <span class="icon">🀄</span>
+        <h3>牌效与进张</h3>
+        <p>如何保留最大进张数？拆搭、靠张、闪避，每一步都在影响听牌的速度与宽度。</p>
+      </div>
+      <div class="advantage-card">
+        <span class="icon">🧮</span>
+        <h3>概率权衡</h3>
+        <p>打出哪一张最安全？根据剩余牌数和场况判断，减少点炮风险的同时维持向听数。</p>
+      </div>
+      <div class="advantage-card">
+        <span class="icon">📐</span>
+        <h3>牌型结构</h3>
+        <p>顺子、刻子、对子、搭子…… 牌型之间的转化决定能否快速达成四组一对。</p>
+      </div>
+    </section>
+
+    <!-- 说明区：从主题展开，诠释“胡了”背后的逻辑 -->
+    <section class="exposition">
+      <p>
+        麻将的乐趣往往集中在一句“胡了”之上。但围绕这简单的两个字，是一整套基于规则与概率的推理过程。手牌从无序到有序，从孤立到连携，每一步都反映着玩家的判断。
+      </p>
+      <p>
+        以最基础的“五门齐”为例，当花色分布均匀时，玩家往往需要决定放弃哪一门，以换取更快的组合速度。而面对复杂的三面听或复合搭子，做出取舍更需要考虑剩余牌数、对手舍牌倾向以及局面的阶段。
+      </p>
+      <div class="highlight-quote">
+        <strong>—— 麻将胡了 ——</strong> 并不只是结果，更代表一种对排列与时机把握的追求。每一局都在重复“如何更接近和牌”的思考。
+      </div>
+      <p>
+        了解基本的麻将规则与番种只是起点，真正的提升在于学会读牌、计算剩余枚数，以及根据不同的牌局阶段调整策略。不论是防守还是进攻，目的都是让手牌更早地满足和牌条件。
+      </p>
+    </section>
+
+    <!-- FAQ 摘要：三个简练问答 -->
+    <section class="faq-summary">
+      <h2>常见疑问 · 摘要</h2>
+      <div class="faq-item">
+        <span class="faq-question">❓ 听牌后一定能胡吗？</span>
+        <div class="faq-answer">不一定。听牌只是具备和牌的可能，还需要考虑自摸或他人点炮，同时要防止放铳或流局。保持听牌的同时兼顾防守是进阶的关键。</div>
+      </div>
+      <div class="faq-item">
+        <span class="faq-question">❓ 如何提高听牌速度？</span>
+        <div class="faq-answer">尽早确定和牌方向，减少无效搭子；优先保留靠张多的牌，例如中张数牌。观察场上出牌，避免与对手重复浪费进张。</div>
+      </div>
+      <div class="faq-item">
+        <span class="faq-question">❓ 什么是“麻将胡了”的核心？</span>
+        <div class="faq-answer">核心是牌型组合与概率决策。理解每种牌型的性质和进张数，能帮助你设计更高效的听牌。想了解更多知识，可以看看 <a href="https://in-majiang.com">麻将胡了</a> 里的一些思路。</div>
+      </div>
+    </section>
+
+    <!-- 底部链接区：自然嵌入链接，不出现“进入”类词汇 -->
+    <footer class="bottom-links">
+      <span>更多关于麻将胡了的讨论</span>
+      <a href="https://in-majiang.com" class="primary-link">麻将胡了</a>
+      <a href="#">牌型分析</a>
+      <a href="#">概率笔记</a>
+      <a href="#">麻将术语</a>
+    </footer>
+
+  </main>
+</body>
+</html>
